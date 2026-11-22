@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <defs>
+    <linearGradient id="bgSq" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#080D19"/>
+      <stop offset="100%" stop-color="#101A30"/>
+    </linearGradient>
+    <linearGradient id="strokeSq" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D5FF"/>
+      <stop offset="60%" stop-color="#1677FF"/>
+      <stop offset="100%" stop-color="#875BFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bgSq)"/>
+  <g transform="translate(52, 26) scale(1.18)">
+    <path d="M64 18 L30 92 M64 18 L98 92" fill="none" stroke="url(#strokeSq)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M41 67 L87 67" fill="none" stroke="#1677FF" stroke-width="7.5" stroke-linecap="round"/>
+    <path d="M64 18 L64 47 M48 55 L64 47 L80 55" fill="none" stroke="#00E6C7" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="64" cy="18" r="7" fill="#00E6C7"/>
+    <circle cx="64" cy="47" r="5.5" fill="#00D5FF"/>
+    <circle cx="41" cy="67" r="5" fill="#875BFF"/>
+    <circle cx="87" cy="67" r="5" fill="#875BFF"/>
+    <circle cx="30" cy="92" r="5.5" fill="#F5F8FF"/>
+    <circle cx="98" cy="92" r="5.5" fill="#F5F8FF"/>
+  </g>
+  <text x="128" y="214" text-anchor="middle" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="34" letter-spacing="4" fill="#F5F8FF">AFH <tspan fill="#00D5FF">AI</tspan></text>
+</svg>

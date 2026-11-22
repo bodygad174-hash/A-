@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="afh_deep_navy">#FF080D19</color>
+    <color name="afh_dark_blue">#FF101A30</color>
+    <color name="afh_electric_blue">#FF1677FF</color>
+    <color name="afh_cyan">#FF00D5FF</color>
+    <color name="afh_turquoise">#FF00E6C7</color>
+    <color name="afh_soft_purple">#FF875BFF</color>
+    <color name="afh_white">#FFF5F8FF</color>
+</resources>

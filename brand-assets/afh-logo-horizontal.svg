@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 120" width="420" height="120">
+  <defs>
+    <linearGradient id="afhHorizGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D5FF"/>
+      <stop offset="55%" stop-color="#1677FF"/>
+      <stop offset="100%" stop-color="#875BFF"/>
+    </linearGradient>
+  </defs>
+  <rect width="420" height="120" rx="20" fill="#080D19"/>
+  <g transform="translate(18, 12) scale(0.75)">
+    <rect x="8" y="8" width="112" height="112" rx="28" fill="#101A30" stroke="url(#afhHorizGrad)" stroke-width="4.5"/>
+    <path d="M64 24 L30 98 M64 24 L98 98" fill="none" stroke="url(#afhHorizGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M41 73 L87 73" fill="none" stroke="#1677FF" stroke-width="7.5" stroke-linecap="round"/>
+    <path d="M64 24 L64 53 M48 61 L64 53 L80 61" fill="none" stroke="#00E6C7" stroke-width="3.5" stroke-linecap="round"/>
+    <circle cx="64" cy="24" r="7" fill="#00E6C7"/>
+    <circle cx="64" cy="53" r="5.5" fill="#00D5FF"/>
+    <circle cx="41" cy="73" r="5" fill="#875BFF"/>
+    <circle cx="87" cy="73" r="5" fill="#875BFF"/>
+    <circle cx="30" cy="98" r="5.5" fill="#F5F8FF"/>
+    <circle cx="98" cy="98" r="5.5" fill="#F5F8FF"/>
+  </g>
+  <text x="132" y="68" font-family="Space Grotesk, Inter, sans-serif" font-weight="700" font-size="42" letter-spacing="3" fill="#F5F8FF">AFH <tspan fill="#00D5FF">AI</tspan></text>
+  <text x="132" y="92" font-family="Plus Jakarta Sans, Inter, sans-serif" font-weight="500" font-size="13" letter-spacing="1.2" fill="#9BB2D9">ONE PLATFORM. YOUR AI. YOUR IDENTITY.</text>
+</svg>

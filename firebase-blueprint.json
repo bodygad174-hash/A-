@@ -1,0 +1,194 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated AFH AI user profile, quotas, and preferences.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID." },
+        "name": { "type": "string", "description": "Display name." },
+        "email": { "type": "string", "description": "User email." },
+        "avatarUrl": { "type": "string", "description": "Optional profile image URL." },
+        "role": { "type": "string", "enum": ["user", "admin"], "description": "Access role." },
+        "status": { "type": "string", "enum": ["active", "suspended"], "description": "Account status." },
+        "dailyRequestsUsed": { "type": "integer", "description": "Requests sent today." },
+        "monthlyRequestsUsed": { "type": "integer", "description": "Requests sent this month." },
+        "dailyLimit": { "type": "integer", "description": "Daily request quota." },
+        "monthlyLimit": { "type": "integer", "description": "Monthly request quota." },
+        "preferredLanguage": { "type": "string", "enum": ["en", "ar"], "description": "UI language." },
+        "preferredTheme": { "type": "string", "enum": ["dark", "light", "system"], "description": "UI theme mode." },
+        "defaultAfhModelId": { "type": "string", "description": "Default branded AFH model ID." },
+        "streamingEnabled": { "type": "boolean", "description": "Stream AI responses token by token." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": [
+        "userId", "name", "email", "role", "status",
+        "dailyRequestsUsed", "monthlyRequestsUsed", "dailyLimit", "monthlyLimit",
+        "preferredLanguage", "preferredTheme", "defaultAfhModelId", "streamingEnabled",
+        "createdAt", "updatedAt"
+      ]
+    },
+    "Conversation": {
+      "title": "Conversation",
+      "description": "User AI chat thread scoped under users/{userId}/conversations.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase UID." },
+        "title": { "type": "string", "description": "Conversation title." },
+        "selectedAfhModelId": { "type": "string", "description": "Active branded AFH model ID." },
+        "favorite": { "type": "boolean", "description": "Whether conversation is favorited." },
+        "lastMessagePreview": { "type": "string", "description": "Short preview of latest message." },
+        "messageCount": { "type": "integer", "description": "Total messages in conversation." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": [
+        "userId", "title", "selectedAfhModelId", "favorite",
+        "lastMessagePreview", "messageCount", "createdAt", "updatedAt"
+      ]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Message inside a conversation.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Owner Firebase UID." },
+        "conversationId": { "type": "string", "description": "Parent conversation ID." },
+        "role": { "type": "string", "enum": ["user", "assistant"], "description": "Sender role." },
+        "content": { "type": "string", "description": "Markdown text content." },
+        "afhModelId": { "type": "string", "description": "AFH model used for this message." },
+        "attachmentNames": { "type": "array", "description": "Attachment filenames (max 5)." },
+        "attachmentTypes": { "type": "array", "description": "Attachment MIME/type labels (max 5)." },
+        "errorMessage": { "type": "string", "description": "Optional error string if generation failed." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp (FieldValue.serverTimestamp())." }
+      },
+      "required": [
+        "userId", "conversationId", "role", "content", "afhModelId",
+        "attachmentNames", "attachmentTypes", "createdAt", "updatedAt"
+      ]
+    },
+    "AfhModelCatalog": {
+      "title": "AfhModelCatalog",
+      "description": "Public AFH-branded AI model catalog (provider-agnostic).",
+      "type": "object",
+      "properties": {
+        "afhModelName": { "type": "string" },
+        "afhModelNameAr": { "type": "string" },
+        "description": { "type": "string" },
+        "descriptionAr": { "type": "string" },
+        "iconKey": { "type": "string" },
+        "capabilities": { "type": "array" },
+        "supportedFileTypes": { "type": "array" },
+        "tierType": { "type": "string", "enum": ["free", "limited", "pro"] },
+        "enabled": { "type": "boolean" },
+        "dailyLimit": { "type": "integer" },
+        "monthlyLimit": { "type": "integer" },
+        "sortOrder": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "afhModelName", "afhModelNameAr", "description", "descriptionAr",
+        "iconKey", "capabilities", "supportedFileTypes", "tierType",
+        "enabled", "dailyLimit", "monthlyLimit", "sortOrder", "updatedAt"
+      ]
+    },
+    "AdminProviderMapping": {
+      "title": "AdminProviderMapping",
+      "description": "Admin-only internal provider routing for each AFH model.",
+      "type": "object",
+      "properties": {
+        "afhModelId": { "type": "string" },
+        "providerIdentifier": { "type": "string", "enum": ["google_gemini", "openai", "anthropic", "deepseek", "opensource"] },
+        "underlyingModelId": { "type": "string" },
+        "systemPrompt": { "type": "string" },
+        "rateLimitRpm": { "type": "integer" },
+        "timeoutSeconds": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "afhModelId", "providerIdentifier", "underlyingModelId",
+        "systemPrompt", "rateLimitRpm", "timeoutSeconds", "updatedAt"
+      ]
+    },
+    "ProviderSetting": {
+      "title": "ProviderSetting",
+      "description": "Admin-only backend provider adapter configuration.",
+      "type": "object",
+      "properties": {
+        "providerIdentifier": { "type": "string" },
+        "displayName": { "type": "string" },
+        "enabled": { "type": "boolean" },
+        "configMode": { "type": "string", "enum": ["firebase_app_check", "server_env"] },
+        "status": { "type": "string", "enum": ["connected", "unconfigured", "disabled"] },
+        "rateLimitRpm": { "type": "integer" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "providerIdentifier", "displayName", "enabled", "configMode",
+        "status", "rateLimitRpm", "notes", "updatedAt"
+      ]
+    },
+    "UsageLog": {
+      "title": "UsageLog",
+      "description": "AI request usage and error telemetry record.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "afhModelId": { "type": "string" },
+        "status": { "type": "string", "enum": ["success", "error", "quota_exceeded"] },
+        "latencyMs": { "type": "integer" },
+        "errorCode": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "afhModelId", "status", "latencyMs", "createdAt"]
+    },
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Explicit administrator UID allowlist.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "grantedBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "grantedBy", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Authenticated user profile, preferences, and usage counters."
+    },
+    "/users/{userId}/conversations/{conversationId}": {
+      "schema": { "$ref": "#/entities/Conversation" },
+      "description": "User-owned AI chat conversations."
+    },
+    "/users/{userId}/conversations/{conversationId}/messages/{messageId}": {
+      "schema": { "$ref": "#/entities/ChatMessage" },
+      "description": "Messages belonging to a user conversation."
+    },
+    "/ai_models/{modelId}": {
+      "schema": { "$ref": "#/entities/AfhModelCatalog" },
+      "description": "AFH-branded public model catalog."
+    },
+    "/admin_provider_mappings/{modelId}": {
+      "schema": { "$ref": "#/entities/AdminProviderMapping" },
+      "description": "Private admin-only internal provider mappings."
+    },
+    "/provider_settings/{providerId}": {
+      "schema": { "$ref": "#/entities/ProviderSetting" },
+      "description": "Private admin-only provider adapter status and rate limits."
+    },
+    "/usage_logs/{logId}": {
+      "schema": { "$ref": "#/entities/UsageLog" },
+      "description": "Request and error telemetry logs."
+    },
+    "/admins/{userId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Administrator allowlist."
+    }
+  }
+}

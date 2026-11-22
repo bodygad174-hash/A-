@@ -1,0 +1,293 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- GLOBAL HARDENED HELPERS ---
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'bodygad999@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // --- ENTITY VALIDATION BLUEPRINTS ---
+    function isValidUser(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.name is string && data.name.size() >= 1 && data.name.size() <= 80 &&
+             data.email is string && data.email.size() <= 120 &&
+             (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 500)) &&
+             data.role in ['user', 'admin'] &&
+             data.status in ['active', 'suspended'] &&
+             data.dailyRequestsUsed is int && data.dailyRequestsUsed >= 0 && data.dailyRequestsUsed <= 100000 &&
+             data.monthlyRequestsUsed is int && data.monthlyRequestsUsed >= 0 && data.monthlyRequestsUsed <= 1000000 &&
+             data.dailyLimit is int && data.dailyLimit >= 1 && data.dailyLimit <= 100000 &&
+             data.monthlyLimit is int && data.monthlyLimit >= 1 && data.monthlyLimit <= 1000000 &&
+             data.preferredLanguage in ['en', 'ar'] &&
+             data.preferredTheme in ['dark', 'light', 'system'] &&
+             data.defaultAfhModelId is string && data.defaultAfhModelId.size() >= 1 && data.defaultAfhModelId.size() <= 64 &&
+             data.streamingEnabled is bool &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidConversation(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.title is string && data.title.size() >= 1 && data.title.size() <= 120 &&
+             data.selectedAfhModelId is string && data.selectedAfhModelId.size() >= 1 && data.selectedAfhModelId.size() <= 64 &&
+             data.favorite is bool &&
+             data.lastMessagePreview is string && data.lastMessagePreview.size() <= 240 &&
+             data.messageCount is int && data.messageCount >= 0 && data.messageCount <= 10000 &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidMessage(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.conversationId is string && data.conversationId.size() >= 1 && data.conversationId.size() <= 128 &&
+             data.role in ['user', 'assistant'] &&
+             data.content is string && data.content.size() <= 32000 &&
+             data.afhModelId is string && data.afhModelId.size() >= 1 && data.afhModelId.size() <= 64 &&
+             data.attachmentNames is list && data.attachmentNames.size() <= 5 &&
+             (data.attachmentNames.size() == 0 || data.attachmentNames[0] is string) &&
+             data.attachmentTypes is list && data.attachmentTypes.size() <= 5 &&
+             (data.attachmentTypes.size() == 0 || data.attachmentTypes[0] is string) &&
+             (!('errorMessage' in data) || (data.errorMessage is string && data.errorMessage.size() <= 500)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAfhModel(data) {
+      return data.afhModelName is string && data.afhModelName.size() >= 1 && data.afhModelName.size() <= 64 &&
+             data.afhModelNameAr is string && data.afhModelNameAr.size() >= 1 && data.afhModelNameAr.size() <= 64 &&
+             data.description is string && data.description.size() >= 1 && data.description.size() <= 300 &&
+             data.descriptionAr is string && data.descriptionAr.size() >= 1 && data.descriptionAr.size() <= 300 &&
+             data.iconKey is string && data.iconKey.size() >= 1 && data.iconKey.size() <= 40 &&
+             data.capabilities is list && data.capabilities.size() <= 10 &&
+             (data.capabilities.size() == 0 || data.capabilities[0] is string) &&
+             data.supportedFileTypes is list && data.supportedFileTypes.size() <= 10 &&
+             (data.supportedFileTypes.size() == 0 || data.supportedFileTypes[0] is string) &&
+             data.tierType in ['free', 'limited', 'pro'] &&
+             data.enabled is bool &&
+             data.dailyLimit is int && data.dailyLimit >= 1 && data.dailyLimit <= 100000 &&
+             data.monthlyLimit is int && data.monthlyLimit >= 1 && data.monthlyLimit <= 1000000 &&
+             data.sortOrder is int && data.sortOrder >= 0 && data.sortOrder <= 100 &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidAdminProviderMapping(data) {
+      return data.afhModelId is string && data.afhModelId.size() >= 1 && data.afhModelId.size() <= 64 &&
+             data.providerIdentifier in ['google_gemini', 'openai', 'anthropic', 'deepseek', 'opensource'] &&
+             data.underlyingModelId is string && data.underlyingModelId.size() >= 1 && data.underlyingModelId.size() <= 100 &&
+             data.systemPrompt is string && data.systemPrompt.size() <= 2000 &&
+             data.rateLimitRpm is int && data.rateLimitRpm >= 1 && data.rateLimitRpm <= 10000 &&
+             data.timeoutSeconds is int && data.timeoutSeconds >= 5 && data.timeoutSeconds <= 300 &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidProviderSetting(data) {
+      return data.providerIdentifier is string && data.providerIdentifier.size() >= 1 && data.providerIdentifier.size() <= 64 &&
+             data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 80 &&
+             data.enabled is bool &&
+             data.configMode in ['firebase_app_check', 'server_env'] &&
+             data.status in ['connected', 'unconfigured', 'disabled'] &&
+             data.rateLimitRpm is int && data.rateLimitRpm >= 1 && data.rateLimitRpm <= 10000 &&
+             data.notes is string && data.notes.size() <= 500 &&
+             data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidUsageLog(data) {
+      return data.userId is string && data.userId.size() >= 1 && data.userId.size() <= 128 &&
+             data.afhModelId is string && data.afhModelId.size() >= 1 && data.afhModelId.size() <= 64 &&
+             data.status in ['success', 'error', 'quota_exceeded'] &&
+             data.latencyMs is int && data.latencyMs >= 0 && data.latencyMs <= 300000 &&
+             (!('errorCode' in data) || (data.errorCode is string && data.errorCode.size() <= 120)) &&
+             data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    // --- COLLECTION RULES ---
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+
+      allow create: if isSignedIn() &&
+                       isValidId(userId) &&
+                       request.auth.uid == userId &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll([
+                         'userId', 'name', 'email', 'role', 'status',
+                         'dailyRequestsUsed', 'monthlyRequestsUsed', 'dailyLimit', 'monthlyLimit',
+                         'preferredLanguage', 'preferredTheme', 'defaultAfhModelId', 'streamingEnabled',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().keys().hasOnly([
+                         'userId', 'name', 'email', 'avatarUrl', 'role', 'status',
+                         'dailyRequestsUsed', 'monthlyRequestsUsed', 'dailyLimit', 'monthlyLimit',
+                         'preferredLanguage', 'preferredTheme', 'defaultAfhModelId', 'streamingEnabled',
+                         'createdAt', 'updatedAt'
+                       ]) &&
+                       incoming().status == 'active' &&
+                       incoming().dailyRequestsUsed == 0 &&
+                       incoming().monthlyRequestsUsed == 0 &&
+                       (incoming().role == 'user' || isAdmin()) &&
+                       isValidUser(incoming());
+
+      allow update: if isSignedIn() &&
+                       isValidId(userId) &&
+                       isValidUser(incoming()) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       (
+                         isAdmin() ||
+                         (
+                           request.auth.uid == userId &&
+                           incoming().role == existing().role &&
+                           incoming().status == existing().status &&
+                           incoming().dailyLimit == existing().dailyLimit &&
+                           incoming().monthlyLimit == existing().monthlyLimit &&
+                           incoming().diff(existing()).affectedKeys().hasOnly([
+                             'name', 'email', 'avatarUrl',
+                             'preferredLanguage', 'preferredTheme', 'defaultAfhModelId',
+                             'streamingEnabled', 'dailyRequestsUsed', 'monthlyRequestsUsed', 'updatedAt'
+                           ])
+                         )
+                       );
+
+      allow delete: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+
+      match /conversations/{conversationId} {
+        allow get: if isSignedIn() && isValidId(conversationId) && (request.auth.uid == userId || isAdmin());
+        allow list: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+        allow create: if isSignedIn() &&
+                         isValidId(conversationId) &&
+                         request.auth.uid == userId &&
+                         incoming().userId == request.auth.uid &&
+                         incoming().keys().hasAll([
+                           'userId', 'title', 'selectedAfhModelId', 'favorite',
+                           'lastMessagePreview', 'messageCount', 'createdAt', 'updatedAt'
+                         ]) &&
+                         incoming().keys().hasOnly([
+                           'userId', 'title', 'selectedAfhModelId', 'favorite',
+                           'lastMessagePreview', 'messageCount', 'createdAt', 'updatedAt'
+                         ]) &&
+                         isValidConversation(incoming());
+
+        allow update: if isSignedIn() &&
+                         isValidId(conversationId) &&
+                         isValidConversation(incoming()) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         (
+                           isAdmin() ||
+                           (
+                             request.auth.uid == userId &&
+                             incoming().diff(existing()).affectedKeys().hasOnly([
+                               'title', 'selectedAfhModelId', 'favorite',
+                               'lastMessagePreview', 'messageCount', 'updatedAt'
+                             ])
+                           )
+                         );
+
+        allow delete: if isSignedIn() && isValidId(conversationId) && (request.auth.uid == userId || isAdmin());
+
+        match /messages/{messageId} {
+          allow get: if isSignedIn() && isValidId(messageId) && (request.auth.uid == userId || isAdmin());
+          allow list: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+
+          allow create: if isSignedIn() &&
+                           isValidId(messageId) &&
+                           request.auth.uid == userId &&
+                           incoming().userId == request.auth.uid &&
+                           incoming().conversationId == conversationId &&
+                           exists(/databases/$(database)/documents/users/$(userId)/conversations/$(conversationId)) &&
+                           incoming().keys().hasAll([
+                             'userId', 'conversationId', 'role', 'content', 'afhModelId',
+                             'attachmentNames', 'attachmentTypes', 'createdAt', 'updatedAt'
+                           ]) &&
+                           incoming().keys().hasOnly([
+                             'userId', 'conversationId', 'role', 'content', 'afhModelId',
+                             'attachmentNames', 'attachmentTypes', 'errorMessage', 'createdAt', 'updatedAt'
+                           ]) &&
+                           isValidMessage(incoming());
+
+          allow update: if isSignedIn() &&
+                           isValidId(messageId) &&
+                           isValidMessage(incoming()) &&
+                           incoming().userId == existing().userId &&
+                           incoming().conversationId == existing().conversationId &&
+                           incoming().createdAt == existing().createdAt &&
+                           (
+                             isAdmin() ||
+                             (
+                               request.auth.uid == userId &&
+                               incoming().diff(existing()).affectedKeys().hasOnly([
+                                 'content', 'afhModelId', 'errorMessage', 'updatedAt'
+                               ])
+                             )
+                           );
+
+          allow delete: if isSignedIn() && isValidId(messageId) && (request.auth.uid == userId || isAdmin());
+        }
+      }
+    }
+
+    match /ai_models/{modelId} {
+      allow get: if isSignedIn() && isValidId(modelId);
+      allow list: if isSignedIn();
+      allow create, update: if isAdmin() && isValidId(modelId) && isValidAfhModel(incoming());
+      allow delete: if isAdmin() && isValidId(modelId);
+    }
+
+    match /admin_provider_mappings/{modelId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && isValidId(modelId) && isValidAdminProviderMapping(incoming());
+      allow delete: if isAdmin() && isValidId(modelId);
+    }
+
+    match /provider_settings/{providerId} {
+      allow read: if isAdmin();
+      allow create, update: if isAdmin() && isValidId(providerId) && isValidProviderSetting(incoming());
+      allow delete: if isAdmin() && isValidId(providerId);
+    }
+
+    match /usage_logs/{logId} {
+      allow get: if isSignedIn() && isValidId(logId) && (existing().userId == request.auth.uid || isAdmin());
+      allow list: if isSignedIn() && (existing().userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() &&
+                       isValidId(logId) &&
+                       incoming().userId == request.auth.uid &&
+                       incoming().keys().hasAll(['userId', 'afhModelId', 'status', 'latencyMs', 'createdAt']) &&
+                       incoming().keys().hasOnly(['userId', 'afhModelId', 'status', 'latencyMs', 'errorCode', 'createdAt']) &&
+                       isValidUsageLog(incoming());
+      allow update, delete: if isAdmin();
+    }
+
+    match /admins/{userId} {
+      allow get: if isSignedIn() && isValidId(userId) && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin();
+      allow create, update, delete: if isAdmin() && isValidId(userId);
+    }
+  }
+}

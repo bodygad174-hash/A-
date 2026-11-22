@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128">
+  <defs>
+    <linearGradient id="afhGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D5FF"/>
+      <stop offset="55%" stop-color="#1677FF"/>
+      <stop offset="100%" stop-color="#875BFF"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="8" width="112" height="112" rx="28" fill="none" stroke="url(#afhGrad)" stroke-width="4.5"/>
+  <path d="M64 24 L30 98 M64 24 L98 98" fill="none" stroke="url(#afhGrad)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M41 73 L87 73" fill="none" stroke="#1677FF" stroke-width="7.5" stroke-linecap="round"/>
+  <path d="M64 24 L64 53 M48 61 L64 53 L80 61" fill="none" stroke="#00E6C7" stroke-width="3.5" stroke-linecap="round"/>
+  <circle cx="64" cy="24" r="7" fill="#00E6C7"/>
+  <circle cx="64" cy="53" r="5.5" fill="#00D5FF"/>
+  <circle cx="41" cy="73" r="5" fill="#875BFF"/>
+  <circle cx="87" cy="73" r="5" fill="#875BFF"/>
+  <circle cx="30" cy="98" r="5.5" fill="#F5F8FF"/>
+  <circle cx="98" cy="98" r="5.5" fill="#F5F8FF"/>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "AFH AI",
+  "description": "One Platform. Your AI. Your Identity. Unified multi-model AI chat, multimodal analysis, image generation, and admin console.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
